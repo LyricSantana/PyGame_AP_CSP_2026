@@ -1,31 +1,44 @@
 import pygame
 import colorsys
+from maps import *
 
 pygame.init()
 
-
-
 # Create window
-# 128 x 128 squares
-# 8 x 15
+# 64 x 64 squares
+# 16 x 30 grid
 screen = pygame.display.set_mode((1920, 1024))
 clock = pygame.time.Clock()
 
-# Create image
+# Create character
 happy = pygame.image.load("happy.png").convert_alpha()
-scaled_image = pygame.transform.scale(happy, (100, 100))
+originalCharacter = pygame.transform.scale(happy, (100, 100))
+flippedCharacter = pygame.transform.flip(originalCharacter, True, False)
+
+character = originalCharacter
 image_rect = happy.get_rect()
 pygame.display.set_caption("Happy Jump")
 pygame.display.set_icon(happy)
 
 # Game variables
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height())
+screenWidth = screen.get_width()
+screenHeight = screen.get_height()
+player_pos = pygame.Vector2(screenWidth / 2, screenHeight)
 hue = 0.0
 dt = 0
 y_accel = 0
 canJump = True
 speed = 5
+blockSize = 64
 running = True
+
+# 0 - No block
+# 1 - Block
+def drawMap(map):
+    for i in range(len(map)):
+        for j in range(len(map[i])):
+            if map[i][j] == 1:
+                pygame.draw.rect(screen, (r, g, b), (j*blockSize, i*blockSize, blockSize, blockSize))
 
 while running:
     for event in pygame.event.get():
@@ -42,8 +55,10 @@ while running:
 
     screen.fill("black")
 
+    drawMap(map1)
+
     image_rect.center = player_pos
-    screen.blit(scaled_image, image_rect)
+    screen.blit(character, image_rect)
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE] and canJump:
@@ -51,24 +66,26 @@ while running:
             y_accel += 40
     if keys[pygame.K_a]:
         player_pos.x -= speed * 100 * dt
+        character = flippedCharacter
     if keys[pygame.K_d]:
+        character = originalCharacter
         player_pos.x += speed * 100 * dt
         
     player_pos.y -= y_accel
     y_accel -= 3
     
     # Contain the player
-    if(player_pos.y > screen.get_height() - 20):
+    if(player_pos.y > screenHeight - 20):
         canJump = True
-        player_pos.y = screen.get_height() - 20
+        player_pos.y = screenHeight - 20
         y_accel = 0 
-    if(player_pos.x > screen.get_width() + 50):
-        player_pos.x = screen.get_width() + 50
+    if(player_pos.x > screenWidth + 50):
+        player_pos.x = screenWidth + 50
     if(player_pos.x < 70):
         player_pos.x = 70
         
         
-    pygame.draw.rect(screen, (r, g, b), (0, screen.get_height() - 32, screen.get_width(), 50))
+    pygame.draw.rect(screen, (r, g, b), (0, screenHeight - 32, screenWidth, 50))
         
     pygame.display.flip()
     
